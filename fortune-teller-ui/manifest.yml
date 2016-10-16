@@ -1,8 +1,9 @@
 ---
 applications:
 - name: cnt-fortune-teller-ui
-  hosts:
-    - cnt-fortune-teller-ui
+#  hosts:
+#    - cnt-fortune-teller-ui
+  random-route: true
   memory: 512MB
   instances: 1
   services:

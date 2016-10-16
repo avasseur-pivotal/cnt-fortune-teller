@@ -1,2 +1,3 @@
 fortune-teller-fortune-service/target/
 fortune-teller-ui/target/
+ci/credentials.yml
