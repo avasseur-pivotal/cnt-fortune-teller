@@ -1,0 +1,14 @@
+---
+jobs:
+- name: unit-test
+  public: true
+  serial: true
+  plan:
+  - get: fortune-service
+    trigger: true
+
+resources:
+- name: fortune-service
+  type: git
+  source:
+    uri: https://github.com/avasseur-pivotal/cnt-fortune-teller.git

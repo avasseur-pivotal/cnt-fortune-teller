@@ -1,0 +1,107 @@
+---
+jobs:
+- name: unit-test
+  public: true
+  serial: true
+  plan:
+  - get: fortune-service
+    trigger: true
+  - task: unit-test-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: java
+          tag: '8'
+      inputs:
+        - name: fortune-service
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cd fortune-service/fortune-teller-fortune-service
+          ./mvnw test
+      params:
+        TERM: dumb
+        version: 0.4.0
+
+- name: deploy
+  public: true
+  serial: true
+  plan:
+  - get: fortune-service
+    passed: [unit-test]
+    trigger: true
+  - task: build-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: java
+          tag: '8'
+      inputs:
+        - name: fortune-service
+      outputs:
+        - name: built-project
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cd fortune-service/fortune-teller-fortune-service
+          ./mvnw package -DskipTests
+          cp -arv target/* ../../built-project
+      params:
+        TERM: dumb
+        version: 0.4.0
+  - put: cf-prod
+    params:
+      manifest: fortune-service/fortune-teller-fortune-service/manifest.yml
+      path: built-project/fortune-teller-fortune-service-0.0.1-SNAPSHOT.jar
+      current_app_name: cnt-fortune-teller-fortune-service
+      environment_variables:
+        CF_TARGET: {{cf-api}}
+- name: smoke-test
+  plan:
+  - get: fortune-service
+    passed: [deploy]
+  - get: smoke-test-timer
+    trigger: true
+  - task: smoke
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: java
+          tag: '8'
+      inputs:
+        - name: fortune-service
+      run:
+        path: sh
+        args:
+        - -exc
+        - echo "smoke-test"
+
+resources:
+- name: fortune-service
+  type: git
+  source:
+    uri: https://github.com/avasseur-pivotal/cnt-fortune-teller.git
+
+- name: smoke-test-timer
+  type: time
+  source: {interval: 1m}
+
+- name: cf-prod
+  type: cf
+  source:
+    api: {{cf-api}}
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: true

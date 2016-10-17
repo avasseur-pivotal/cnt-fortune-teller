@@ -1,0 +1,34 @@
+---
+jobs:
+- name: unit-test
+  public: true
+  serial: true
+  plan:
+  - get: fortune-service
+    trigger: true
+  - task: unit-test-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: java
+          tag: '8'
+      inputs:
+        - name: fortune-service
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cd fortune-service/fortune-teller-fortune-service
+          ./mvnw test
+      params:
+        TERM: dumb
+        version: 0.4.0
+
+resources:
+- name: fortune-service
+  type: git
+  source:
+    uri: https://github.com/avasseur-pivotal/cnt-fortune-teller.git

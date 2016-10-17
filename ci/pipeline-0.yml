@@ -1,0 +1,7 @@
+---
+
+resources:
+- name: fortune-service
+  type: git
+  source:
+    uri: https://github.com/avasseur-pivotal/cnt-fortune-teller.git

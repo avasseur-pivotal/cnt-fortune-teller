@@ -4,7 +4,7 @@ resources:
 - name: cloud-native-tour-repo
   type: git
   source:
-    uri: https://github.com/ebornier-pivotal/cnt-fortune-teller.git 
+    uri: https://github.com/avasseur-pivotal/cnt-fortune-teller.git 
 
 - name: cf
   type: cf
